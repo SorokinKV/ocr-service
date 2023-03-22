@@ -1,0 +1,153 @@
+
+filetypes: png,jpg,jpeg,tiff,tif
+
+
+minio:
+  bucket:
+    download:
+      bucket-main
+    ocr:
+      bucket-ocr
+
+locales: rus+eng
+
+ocrEngineMode: 1
+
+pageSegMode: -1
+
+
+
+logging:
+  file:
+    name: /tmp/spring_log.log
+
+spring:
+  application:
+        name: ocr-service
+#  http:
+#      multipart:
+#            enabled: true
+#            max-file-size: 200MB
+#            max-request-size: 200MB
+  kafka:
+    #    listener:
+    #      concurrency: 1
+    consumer:
+      #      properties:
+      #        heartbeat:
+      #          interval:
+      #            ms: 5000
+      enable-auto-commit: true
+      auto:
+        commit:
+          interval:
+            ms: 1000
+  #      max-poll-records: 1
+  #      session:
+  #        timeout:
+  #           ms: 1200000
+  #      request:
+  #        timeout:
+  #          ms: 1240000
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 200MB
+  profiles:
+        active:
+            - local
+  main:
+    lazy-initialization: false
+
+library:
+  count: 23
+
+dir:
+  upload:  /tmp/upload-dir
+  ocr: /tmp/ocr
+  tessdata: /opt/TessData
+---
+server:
+    port: 8847
+spring:
+  profiles: test
+  minio:
+    url: https://minio.sorokinkv.local:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket: bucket-main
+ 
+info:
+  pattern:
+    urnSwagger: localhost:8847
+    urlServer: http://localhost:8847
+    urlFront: http://localhost
+
+dir:
+  tessdata: /opt/TessData
+
+kafka:
+  server: kafka.sorokinkv.local
+  port: 9092
+  write:
+    topic: to-convert
+  listen:
+    topic: to-ocr
+    partition: 0
+    timeout: 10
+  producer:
+    id: ocr
+  consumer:
+    id: ocr-test
+    group:
+      id: ocr-test
+
+
+storage:
+  url: https://sorokinkv.local:8080/files/
+
+
+---
+role:
+    hierarchy: ROLE_ADMIN > ROLE_MANAGER > ROLE_USER
+
+
+token:
+    audience: secure-app
+    expiration:
+        minutes: 60
+    header: Authorization
+    issuer: secure-api
+    prefix: 'Bearer '
+    secret: secret
+    type: JWT
+
+logging:
+  level:
+    ROOT: INFO
+#    ERROR
+#    org.springframework.web: ERROR
+    ru.sorokinkv: INFO
+    org:
+      springframework:
+        boot:
+          autoconfigure: ERROR
+
+      hibernate:
+        SQL: TRACE
+        type.descriptor.sql: TRACE
+
+  pattern:
+    #    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level  [%thread] %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} | %-5level | %X{X-Request-UUID} | [%thread] | %C %M: - %msg%n"
+#    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  path: logs
+#  file: app.log
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '*'

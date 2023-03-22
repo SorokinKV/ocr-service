@@ -1,0 +1,40 @@
+version: '2.2'
+
+services:
+  ocr-service-1:
+    image: "ocr-service:develop"
+    container_name: "ocr-service-1"
+    hostname: "ocr-service-1"
+    restart: always
+    extra_hosts:
+      - "sorokinkv.local:192.168.0.100"
+      - "kafka.sorokinkv.local:192.168.0.102"
+    environment:
+      - TZ=Europe/Moscow
+    ports:
+      - "8846:8847"
+    volumes:
+      - /opt/ocr-service/tessdata:/opt/tessdata
+      - /etc/localtime:/etc/localtime:ro
+    mem_limit: "12G"
+#    cpus: 0.8
+    # cpuset: "2,3,4,5,6,7"
+
+  nginx:
+    image: "nginx:1.19.2-alpine"
+    container_name: "ocr-service-nginx"
+    restart: always
+    extra_hosts:
+      - "sorokinkv.local:192.168.0.100"
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ./certs/local.crt:/etc/nginx/ssl/local.crt
+      - ./certs/local.key:/etc/nginx/ssl/local.key
+      - ./assets/nginx_dev.conf:/etc/nginx/nginx.conf:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "8847:8847"
+    depends_on:
+      - ocr-service-1
+
